@@ -1,0 +1,45 @@
+function [E_mu, E, v1, v2] = MC(m, Ci, p, rho,mu, x)
+    
+    format long g   
+    %rho = 0.1;
+    % test = norminv(0.998, 0, 1);
+    %m = 1000;
+    %Ci = 1;
+    %p = 0.002;
+    %mu = 0.6;
+    %x = 6;
+    
+    xi = norminv(1-p, 0, 1);
+    for i = 1:10000
+        
+        epsilon = randn(1, m);
+        Z = normrnd(mu, 1); %randn(1); %***** normrnd([mu], 1)
+       % Xi = rho * Z + sqrt(1 - rho^2) * epsilon;
+        pTilda = 1 - normcdf((xi - rho * Z)/sqrt(1 - rho^2)); % #2  vector for different mu
+        
+        %Pi = 1 - normcdf((Xi - rho * Z)/sqrt(1-rho^2));
+        theta = log(x * (1 - pTilda)/(pTilda * (m - x)));
+        theta = max(theta, 0);
+        pTheta = (pTilda * exp(theta*Ci))/(pTilda * exp(theta*Ci) + 1 - pTilda);
+        L = binornd(m, pTheta);
+        %for i = 1:m
+         %   L = L + sample(pTheta);
+        %end
+        cumulant = m * log(pTilda*exp(theta*Ci) + 1 - pTilda);
+        indicator = (L > x);
+        estimatorWithoutMu(i) = exp(- theta * L + cumulant)* indicator;
+        
+        %for i = 1:length(mu)
+            %Z = normrnd(mu(i), 1);
+            estimatorWithMu(i) = exp(-mu*Z + 0.5 * mu^2 - theta * L + cumulant)* indicator;
+        %end
+        
+   end
+   
+   E_mu = mean(estimatorWithMu);
+   E = mean(estimatorWithoutMu);
+   v1 = var(estimatorWithMu);
+   v2 = var(estimatorWithoutMu);
+   %v2/v1
+   %(v2-v1)/v1   
+  
