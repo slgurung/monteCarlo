@@ -1,0 +1,34 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% FRE 6251 Numerical and Simulation Techniques in Finance
+% Name: Surya L Gurung     ID: 0449604
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Matrix of asset prices, one column representing one path. 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [paths, mu, Z] = MuAssetPaths(So,K,r,sigma, T, tSteps,pNum)
+% Parameters:
+    % So = initial asset price
+    % mu = expected return
+    % sigma = volatility
+    % T = maturity time in years
+    % tSteps = number of time steps
+    % pNum = number of paths 
+    % 
+    
+    dT = T/tSteps; % size of one time step
+    drift = r - (0.5 * sigma^2);  % drift of process
+    %z = randn(tSteps, pNum);  % matrix of normally distributed random values
+    newMu = OptimalDrift(So, K, r, sigma, T, tSteps);
+    normrnd(newMu, 1)
+    normrnd(newMu',1)
+    mu = zeros(pNum, tSteps);
+    one = ones(pNum,tSteps);
+    for i = 1: pNum
+        mu(i, :) = newMu; 
+    end
+    Z = normrnd(mu, one);
+    
+    % matrix of all paths
+    paths = So*[ones(1,pNum); cumprod(exp(drift*dT + sigma * sqrt(dT)* Z),1)];
+    
+    
